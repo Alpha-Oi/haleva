@@ -1,0 +1,254 @@
+{
+  "name": "Haleva Pipeline",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 6
+            }
+          ]
+        }
+      },
+      "id": "trigger-schedule",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1",
+              "name": "topic",
+              "value": "AI tools for content creators in 2026",
+              "type": "string"
+            },
+            {
+              "id": "2",
+              "name": "platforms",
+              "value": "instagram,tiktok,youtube",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "set-topic",
+      "name": "Set Topic",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"gpt-4o-mini\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"You are a social media copywriter. Write a short, engaging caption for a Reel/Short. Include 3-5 relevant hashtags. Max 150 characters for the caption, hashtags on a new line.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"Topic: {{ $json.topic }}\"\n    }\n  ],\n  \"temperature\": 0.8\n}",
+        "options": {}
+      },
+      "id": "openai-text",
+      "name": "Generate Caption (OpenAI)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1",
+              "name": "caption",
+              "value": "={{ $json.choices[0].message.content }}",
+              "type": "string"
+            },
+            {
+              "id": "2",
+              "name": "topic",
+              "value": "={{ $('Set Topic').item.json.topic }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "extract-caption",
+      "name": "Extract Caption",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://moneyprinter:8501/api/v1/videos",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"video_subject\": \"{{ $json.topic }}\",\n  \"video_aspect\": \"9:16\",\n  \"video_clip_duration\": 5,\n  \"video_count\": 1,\n  \"voice_name\": \"en-US-JennyNeural\"\n}",
+        "options": {
+          "timeout": 600000
+        }
+      },
+      "id": "video-generate",
+      "name": "Generate Video (MoneyPrinterTurbo)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1120, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://postiz:5000/api/public/v1/posts",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"content\": \"{{ $('Extract Caption').item.json.caption }}\",\n  \"platforms\": [\"instagram\", \"tiktok\", \"youtube\"],\n  \"media\": [\n    {\n      \"type\": \"video\",\n      \"url\": \"{{ $json.video_url }}\"\n    }\n  ],\n  \"scheduled_at\": \"{{ new Date(Date.now() + 3600000).toISOString() }}\"\n}",
+        "options": {}
+      },
+      "id": "publish-postiz",
+      "name": "Publish (Postiz)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1340, 300]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1",
+              "name": "status",
+              "value": "published",
+              "type": "string"
+            },
+            {
+              "id": "2",
+              "name": "timestamp",
+              "value": "={{ $now.toISO() }}",
+              "type": "string"
+            },
+            {
+              "id": "3",
+              "name": "post_id",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "log-result",
+      "name": "Log Result",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [1560, 300]
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Set Topic",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Topic": {
+      "main": [
+        [
+          {
+            "node": "Generate Caption (OpenAI)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Caption (OpenAI)": {
+      "main": [
+        [
+          {
+            "node": "Extract Caption",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Caption": {
+      "main": [
+        [
+          {
+            "node": "Generate Video (MoneyPrinterTurbo)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Video (MoneyPrinterTurbo)": {
+      "main": [
+        [
+          {
+            "node": "Publish (Postiz)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Publish (Postiz)": {
+      "main": [
+        [
+          {
+            "node": "Log Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "pinData": {},
+  "versionId": "1.0.0",
+  "triggerCount": 1,
+  "tags": ["haleva", "pipeline"]
+}
