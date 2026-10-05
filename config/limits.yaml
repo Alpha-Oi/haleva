@@ -1,0 +1,22 @@
+﻿platforms:
+  instagram:
+    posts_per_24h: 25
+    requests_per_hour: 200
+  tiktok:
+    posts_per_24h: 25
+    requests_per_minute: 600
+    publish_per_minute: 6
+  twitter:
+    posts_per_24h: 50
+    requests_per_15min: 100
+  facebook:
+    posts_per_24h: 10
+    actions_per_24h: 4800
+
+postiz:
+  requests_per_hour: 30
+
+safety:
+  min_delay_between_posts_sec: 3600
+  require_human_approval: true
+  max_retries_on_rate_limit: 3
