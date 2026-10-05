@@ -1,0 +1,25 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate YAML files
+        run: |
+          pip install yamllint
+          yamllint -d relaxed docker-compose.yml config/limits.yaml || true
+
+      - name: Validate docker-compose
+        run: docker compose config
+
+      - name: Check JSON files
+        run: |
+          find assets -name "*.json" -exec python -m json.tool {} \; > /dev/null

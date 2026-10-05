@@ -1,0 +1,16 @@
+﻿{
+  ""primary"": ""#0E7C66"",
+  ""primaryDark"": ""#0A5749"",
+  ""accent"": ""#4ADE80"",
+  ""accentAlt"": ""#FBBF24"",
+  ""background"": ""#F8FAF9"",
+  ""surface"": ""#E8EEEC"",
+  ""text"": ""#0B1F1A"",
+  ""muted"": ""#6B7F79"",
+  ""dark"": {
+    ""background"": ""#0B1F1A"",
+    ""surface"": ""#132E27"",
+    ""text"": ""#E8EEEC"",
+    ""accent"": ""#4ADE80""
+  }
+}
