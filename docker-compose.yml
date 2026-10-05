@@ -1,16 +1,30 @@
-﻿version: "3.9"
-
 services:
   postiz:
-    image: ghcr.io/gitroomhq/postiz-app:latest
+    image: ghcr.io/gitroomhq/postiz-app:v2.11.3
     restart: unless-stopped
     ports:
       - "5000:5000"
     env_file: .env
+    environment:
+      - TELEGRAM_BOT_NAME=${TELEGRAM_BOT_NAME}
+      - TELEGRAM_TOKEN=${TELEGRAM_TOKEN}
+      - STORAGE_PROVIDER=${STORAGE_PROVIDER}
+      - UPLOAD_DIRECTORY=${UPLOAD_DIRECTORY}
+      - NEXT_PUBLIC_UPLOAD_DIRECTORY=${NEXT_PUBLIC_UPLOAD_DIRECTORY}
+      - MAIN_URL=${MAIN_URL}
     volumes:
       - postiz-data:/app/data
+      - postiz-uploads:/uploads
+      - ./.env:/app/.env
     depends_on:
       - postgres
+      - redis
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    volumes:
+      - redis-data:/data
 
   n8n:
     image: n8nio/n8n:latest
@@ -35,5 +49,7 @@ services:
 
 volumes:
   postiz-data:
+  postiz-uploads:
+  redis-data:
   n8n-data:
   pg-data:
