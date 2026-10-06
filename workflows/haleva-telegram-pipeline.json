@@ -1,0 +1,65 @@
+{
+  "name": "Haleva Pipeline",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "adcc0d24-bc56-4dd5-bf70-97b327c5e660",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "chatId": "@haleva_alpha",
+        "text": "Привет из n8n! Тест автоматизации Haleva.",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        224,
+        0
+      ],
+      "id": "20e04d46-3f60-42bb-be9f-4176d29947fb",
+      "name": "Send a text message",
+      "webhookId": "4ad6ae8b-d541-4b55-ab9e-2b37c58479dc",
+      "credentials": {
+        "telegramApi": {
+          "id": "82nujpEM2ty3Nr1n",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "4a9cd50c-f254-4fd7-8e4f-7efc206d423b",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "fd49751005524612e20cc9c74ec797317d41cabb1b7e5d8d5b1464cdd222e71a"
+  },
+  "nodeGroups": [],
+  "id": "idPy6J0xgDRuXubq",
+  "tags": []
+}
