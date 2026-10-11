@@ -62,6 +62,17 @@ First run will pull images (~2 GB). Wait 3-5 minutes.
 4. Configure credentials (OpenAI, Postiz API)
 5. Activate
 
+### AI-generated posts (Claude → Telegram)
+
+`workflows/haleva-ai-telegram-pipeline.json` generates a post from a topic with the
+Anthropic Messages API and sends it to Telegram.
+
+1. Import the file the same way as above
+2. Create an **Anthropic** credential in n8n (your `ANTHROPIC_API_KEY`) and attach it to the
+   `Generate Post (Claude)` node; attach your Telegram credential to `Send a text message`
+3. Edit `topic`, `tone`, `language`, `model`, `chatId` in the `Post Settings` node
+4. Run manually; empty model responses are not sent (`Text Not Empty?` check)
+
 ## Step 7: Test the pipeline
 
 1. Add a row to your Google Sheet (or trigger manually)

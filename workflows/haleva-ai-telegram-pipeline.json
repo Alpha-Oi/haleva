@@ -1,0 +1,187 @@
+{
+  "name": "Haleva AI Telegram Pipeline",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [0, 0],
+      "id": "a1000000-0000-4000-8000-000000000001",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a1000000-0000-4000-8000-000000000011",
+              "name": "topic",
+              "value": "Автоматизация соцсетей: зачем нужен автопостинг",
+              "type": "string"
+            },
+            {
+              "id": "a1000000-0000-4000-8000-000000000012",
+              "name": "tone",
+              "value": "дружелюбный, живой, без клише",
+              "type": "string"
+            },
+            {
+              "id": "a1000000-0000-4000-8000-000000000013",
+              "name": "language",
+              "value": "русский",
+              "type": "string"
+            },
+            {
+              "id": "a1000000-0000-4000-8000-000000000014",
+              "name": "model",
+              "value": "claude-sonnet-5-5",
+              "type": "string"
+            },
+            {
+              "id": "a1000000-0000-4000-8000-000000000015",
+              "name": "chatId",
+              "value": "@haleva_alpha",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [224, 0],
+      "id": "a1000000-0000-4000-8000-000000000002",
+      "name": "Post Settings"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "anthropicApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "anthropic-version",
+              "value": "2023-06-01"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  model: $json.model,\n  max_tokens: 800,\n  system: 'Ты автор постов для Telegram-канала. Пиши коротко (до 900 символов), без markdown-разметки, максимум 2 эмодзи. Верни только текст поста.',\n  messages: [{ role: 'user', content: 'Тема: ' + $json.topic + '\\nТон: ' + $json.tone + '\\nЯзык: ' + $json.language }]\n}) }}",
+        "options": {
+          "timeout": 60000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [448, 0],
+      "id": "a1000000-0000-4000-8000-000000000003",
+      "name": "Generate Post (Claude)",
+      "retryOnFail": true,
+      "maxTries": 2,
+      "credentials": {
+        "anthropicApi": {
+          "id": "",
+          "name": "Anthropic account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a1000000-0000-4000-8000-000000000021",
+              "name": "text",
+              "value": "={{ ($json.content || []).filter(b => b.type === 'text').map(b => b.text).join('').trim().slice(0, 4000) }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [672, 0],
+      "id": "a1000000-0000-4000-8000-000000000004",
+      "name": "Extract Text"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "a1000000-0000-4000-8000-000000000031",
+              "leftValue": "={{ $json.text }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [896, 0],
+      "id": "a1000000-0000-4000-8000-000000000005",
+      "name": "Text Not Empty?"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Post Settings').item.json.chatId }}",
+        "text": "={{ $json.text }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [1120, -96],
+      "id": "a1000000-0000-4000-8000-000000000006",
+      "name": "Send a text message",
+      "credentials": {
+        "telegramApi": {
+          "id": "",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [[{ "node": "Post Settings", "type": "main", "index": 0 }]]
+    },
+    "Post Settings": {
+      "main": [[{ "node": "Generate Post (Claude)", "type": "main", "index": 0 }]]
+    },
+    "Generate Post (Claude)": {
+      "main": [[{ "node": "Extract Text", "type": "main", "index": 0 }]]
+    },
+    "Extract Text": {
+      "main": [[{ "node": "Text Not Empty?", "type": "main", "index": 0 }]]
+    },
+    "Text Not Empty?": {
+      "main": [[{ "node": "Send a text message", "type": "main", "index": 0 }], []]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": []
+}

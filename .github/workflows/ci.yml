@@ -18,7 +18,9 @@ jobs:
           yamllint -d relaxed docker-compose.yml config/limits.yaml || true
 
       - name: Validate docker-compose
-        run: docker compose config
+        run: |
+          cp .env.example .env
+          docker compose config > /dev/null
 
       - name: Check JSON files
         run: |
