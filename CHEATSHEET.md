@@ -150,7 +150,7 @@ MoneyPrinterTurbo: https://github.com/harry0703/MoneyPrinterTurbo
 [x] Telegram-бот + канал
 [x] Postiz публикация
 [x] n8n автопостинг по расписанию
-[ ] AI-генерация текстов
+[x] AI-генерация текстов (workflow haleva-ai-telegram-pipeline, нужен Anthropic credential в n8n)
 [ ] MoneyPrinterTurbo — видео
 [ ] YouTube / Instagram / TikTok
 [ ] Google Sheets контент-план

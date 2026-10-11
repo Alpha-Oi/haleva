@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- `workflows/haleva-ai-telegram-pipeline.json`: topic → Claude (Anthropic API) → Telegram post
+
 ### Planned
 - Docker Compose stack for Postiz + n8n + MoneyPrinterTurbo
 - n8n workflow templates for idea-to-publish pipeline
